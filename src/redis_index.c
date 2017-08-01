@@ -274,7 +274,9 @@ static void dumpInvertedIndex(const InvertedIndex *idx) {
   printf("  Shared? %d\n", idx->shared);
   printf("  Blocks: %d (arr @%p)\n", idx->size, idx->blocks);
   for (size_t ii = 0; ii < idx->size; ++ii) {
-    printf("    Block #%lu @%p. NumDocs=%d\n", ii, idx->blocks[ii].data, idx->blocks[ii].numDocs);
+    const IndexBlock *block = idx->blocks + ii;
+    printf("    Block #%lu @%p. NumDocs=%d, first=%u, last=%u\n", ii, block->data, block->numDocs,
+           block->firstId, block->lastId);
   }
 }
 
