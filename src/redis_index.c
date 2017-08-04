@@ -380,22 +380,12 @@ InvertedIndex *Redis_OpenInvertedIndex(RedisSearchCtx *ctx, const char *term, si
 IndexReader *Redis_OpenReader(RedisSearchCtx *ctx, RSToken *tok, DocTable *dt, int singleWordMode,
                               t_fieldMask fieldMask, ConcurrentSearchCtx *csx) {
 
-  RedisModuleString *termKey = fmtRedisTermKey(ctx, tok->str, tok->len);
-  RedisModuleKey *k = RedisModule_OpenKey(ctx->redisCtx, termKey, REDISMODULE_READ);
-
-  // we do not allow empty indexes when loading an existing index
-  if (k == NULL || RedisModule_KeyType(k) == REDISMODULE_KEYTYPE_EMPTY ||
-      RedisModule_ModuleTypeGetType(k) != InvertedIndexType) {
-    RedisModule_FreeString(ctx->redisCtx, termKey);
+  // Find the trie entry:
+  InvertedIndex *idx = Redis_OpenInvertedIndex(ctx, tok->str, tok->len, 0);
+  if (!idx) {
     return NULL;
   }
-
-  InvertedIndex *idx = RedisModule_ModuleTypeGetValue(k);
-
   IndexReader *ret = NewTermIndexReader(idx, dt, fieldMask, NewTerm(tok));
-  if (csx) {
-    ConcurrentSearch_AddKey(csx, k, REDISMODULE_READ, termKey, IndexReader_OnReopen, ret, NULL);
-  }
   return ret;
 }
 
