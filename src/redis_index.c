@@ -367,12 +367,20 @@ InvertedIndex *Redis_OpenInvertedIndex(RedisSearchCtx *ctx, const char *term, si
   RuneBuf buf;
   size_t runeLen;
   rune *rune = RuneBuf_Fill(term, len, &buf, &runeLen);
+
+  if (runeLen >= MAX_STRING_LEN || runeLen == 0) {
+    // printf("len=%lu. Too big or 0\n", runeLen);
+    RuneBuf_Release(&buf);
+    return NULL;
+  }
+
   InvertedIndex *ret;
   if (write) {
     ret = openInvWR(ctx, rune, runeLen, term, len);
   } else {
     ret = openInvRO(ctx, rune, runeLen, term, len);
   }
+
   RuneBuf_Release(&buf);
   return ret;
 }
