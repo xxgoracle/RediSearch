@@ -263,20 +263,22 @@ void addTokensToIndex(indexingContext *ictx, RSAddDocumentCtx *aCtx) {
 
   while (entry != NULL) {
     InvertedIndex *invidx = Redis_OpenInvertedIndex(ctx, entry->term, entry->len, 1);
-    size_t sz = InvertedIndex_WriteForwardIndexEntry(invidx, encoder, entry);
+    if (invidx != NULL) {
+      size_t sz = InvertedIndex_WriteForwardIndexEntry(invidx, encoder, entry);
 
-    /*******************************************
-    * update stats for the index
-    ********************************************/
-    /* record the actual size consumption change */
-    ctx->spec->stats.invertedSize += sz;
-    ctx->spec->stats.numRecords++;
-    /* increment the number of terms if this is a new term*/
+      /*******************************************
+      * update stats for the index
+      ********************************************/
+      /* record the actual size consumption change */
+      ctx->spec->stats.invertedSize += sz;
+      ctx->spec->stats.numRecords++;
+      /* increment the number of terms if this is a new term*/
 
-    /* Record the space saved for offset vectors */
-    if (ctx->spec->flags & Index_StoreTermOffsets) {
-      ctx->spec->stats.offsetVecsSize += VVW_GetByteLength(entry->vw);
-      ctx->spec->stats.offsetVecRecords += VVW_GetCount(entry->vw);
+      /* Record the space saved for offset vectors */
+      if (ctx->spec->flags & Index_StoreTermOffsets) {
+        ctx->spec->stats.offsetVecsSize += VVW_GetByteLength(entry->vw);
+        ctx->spec->stats.offsetVecRecords += VVW_GetCount(entry->vw);
+      }
     }
 
     entry = ForwardIndexIterator_Next(&it);
