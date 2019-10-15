@@ -243,7 +243,7 @@ int AC_ParseArgSpec(ArgsCursor *ac, ACArgSpec *specs, ACArgSpec **errSpec) {
     *errSpec = NULL;
   }
 
-  while (!AC_IsAtEnd(ac) && !found) {
+  while (!AC_IsAtEnd(ac)) {
     if ((rv = AC_GetString(ac, &s, &n, AC_F_NOADVANCE) != AC_OK)) {
       return rv;
     }
@@ -260,6 +260,9 @@ int AC_ParseArgSpec(ArgsCursor *ac, ACArgSpec *specs, ACArgSpec **errSpec) {
     }
 
     if (cur->name == NULL) {
+      if (found) {
+        break;
+      }
       return AC_ERR_ENOENT;
     }
 
