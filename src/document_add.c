@@ -93,10 +93,6 @@ static int parseDocumentOptions(AddDocumentOptions *opts, ArgsCursor *ac, QueryE
       } else {
         QueryError_SetErrorFmt(status, QUERY_EADDARGS, "Unknown keyword `%.*s` provided", (int)narg, s);
       }
-      // Argument not found, that's ok. We'll handle it below
-    } else {
-      QueryError_SetErrorFmt(status, QUERY_EADDARGS, "%s: %s", errArg->name, AC_Strerror(rv));
-      return REDISMODULE_ERR;
     }
   }
 
