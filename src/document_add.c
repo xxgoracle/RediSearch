@@ -75,6 +75,8 @@ static int parseDocumentOptions(AddDocumentOptions *opts, ArgsCursor *ac, QueryE
     } else if (rv == AC_ERR_ENOENT) {
       size_t narg;
       const char *s = AC_GetStringNC(ac, &narg);
+
+      // Check if done parsing args options 
       if (!strncasecmp("FIELDS", s, narg)) {
         size_t numRemaining = AC_NumRemaining(ac);
         if (numRemaining % 2 != 0) {
@@ -89,9 +91,7 @@ static int parseDocumentOptions(AddDocumentOptions *opts, ArgsCursor *ac, QueryE
         break;
 
       } else {
-        const char *unknown = AC_GetStringNC(ac, NULL);
-        QueryError_SetErrorFmt(status, QUERY_EADDARGS, "Unknown keyword `%.*s` provided", (int)narg,
-                               unknown);
+        QueryError_SetErrorFmt(status, QUERY_EADDARGS, "Unknown keyword `%.*s` provided", (int)narg, s);
       }
       // Argument not found, that's ok. We'll handle it below
     } else {

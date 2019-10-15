@@ -235,6 +235,7 @@ static int parseSingleSpec(ArgsCursor *ac, ACArgSpec *spec) {
 
 int AC_ParseArgSpec(ArgsCursor *ac, ACArgSpec *specs, ACArgSpec **errSpec) {
   const char *s = NULL;
+  int found = 0;
   size_t n;
   int rv;
 
@@ -242,7 +243,7 @@ int AC_ParseArgSpec(ArgsCursor *ac, ACArgSpec *specs, ACArgSpec **errSpec) {
     *errSpec = NULL;
   }
 
-  while (!AC_IsAtEnd(ac)) {
+  while (!AC_IsAtEnd(ac) && !found) {
     if ((rv = AC_GetString(ac, &s, &n, AC_F_NOADVANCE) != AC_OK)) {
       return rv;
     }
@@ -253,6 +254,7 @@ int AC_ParseArgSpec(ArgsCursor *ac, ACArgSpec *specs, ACArgSpec **errSpec) {
         continue;
       }
       if (!strncasecmp(cur->name, s, n)) {
+        found = 1;
         break;
       }
     }
