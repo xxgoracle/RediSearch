@@ -657,9 +657,6 @@ def testPaging(env):
     with env.assertResponseError():
         r.execute_command(
             'ft.search', 'idx', 'hello', 'nocontent', 'limit', -1, 10)
-    with env.assertResponseError():
-        r.execute_command(
-            'ft.search', 'idx', 'hello', 'nocontent', 'limit', 0, 2000000)
 
 def testPrefix(env):
     r = env
