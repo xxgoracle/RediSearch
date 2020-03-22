@@ -390,6 +390,12 @@ class TestAggregate():
                           'SORTBY', 2, '@brand', 'ASC')
         self.env.assertEqual('__generated_aliasfirst_valuetitle,by,price,desc', rv[1][2])
 
+    def testNoLimitMax(self):
+        # Issue 1125
+        rv = self.env.cmd('ft.aggregate', 'games', '*',
+                          'LIMIT', 0, 10000001)
+        self.env.assertEqual(2266, len(rv))
+
     # def testLoadAfterSortBy(self):
     #     with self.env.assertResponseError():
     #         self.env.cmd('ft.aggregate', 'games', '*',
