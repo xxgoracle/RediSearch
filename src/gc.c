@@ -74,6 +74,13 @@ static void stopGC(GCContext* gc) {
   }  
 }
 
+static void releaseBlockedClients(BlockClients *bClients) {
+  RedisModuleBlockedClient* client;
+  while ((client = BlockClients_pop(bClients))) {  
+    RedisModule_UnblockClient(client, NULL);
+  }
+}
+
 static void timerCallback(RedisModuleCtx* ctx, void* data);
 
 static long long getNextPeriod(GCContext* gc) {
@@ -100,10 +107,9 @@ static void threadCallback(void* data) {
   int ret = gc->callbacks.periodicCallback(ctx, gc->gcCtx);
 
   RedisModule_ThreadSafeContextLock(ctx);
-  RedisModuleBlockedClient* bClient = BlockClients_pop(&gc->bClients);
-  if (bClient) {
-    RedisModule_UnblockClient(bClient, NULL);
-  }
+
+  releaseBlockedClients(&gc->bClients);
+
   if (!ret || gc->stopped) {
     stopGC(gc);
     RedisModule_ThreadSafeContextUnlock(ctx);
@@ -120,11 +126,8 @@ static void destroyCallback(void* data) {
 
   RedisModule_ThreadSafeContextLock(ctx);
   RedisModule_StopTimer(ctx, gc->timerID, NULL);
-
-  RedisModuleBlockedClient* bClient;
-  while ((bClient = BlockClients_pop(&gc->bClients))) {  
-    RedisModule_UnblockClient(bClient, NULL);
-  }
+  
+  releaseBlockedClients(&gc->bClients);
   
   gc->callbacks.onTerm(gc->gcCtx);
   rm_free(gc);
@@ -158,6 +161,7 @@ void GCContext_Stop(GCContext* gc) {
   RedisModuleCtx* ctx = RSDummyContext;
   stopGC(gc);
   RedisModule_StopTimer(ctx, gc->timerID, NULL);
+  releaseBlockedClients(&gc->bClients);
   thpool_add_work(gcThreadpool_g, destroyCallback, gc); 
 }
 
